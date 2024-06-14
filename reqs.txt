@@ -1,0 +1,17 @@
+beautifulsoup4
+blinker
+click
+colorama
+Flask
+Flask-SQLAlchemy
+google
+google-search
+greenlet
+itsdangerous
+Jinja2
+lxml
+MarkupSafe
+soupsieve
+SQLAlchemy
+typing_extensions
+Werkzeug
