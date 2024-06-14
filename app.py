@@ -1,10 +1,8 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 from googlesearch import search
 from flask_sqlalchemy import SQLAlchemy
 import math
 from datetime import datetime 
-
-
 
 app = Flask(__name__)
 
@@ -33,12 +31,9 @@ def init_db():
 # Home page route
 @app.route('/')
 def index():
-    # rows = User.query.all()
     rows = User.query.order_by(User.date_submitted.desc()).all()
     no_data = len(rows) == 0
     return render_template('index.html', rows=rows, no_data=no_data)
-
-
 
 # Check rank route
 @app.route('/', methods=['POST'])
@@ -92,14 +87,15 @@ def check_rank():
         db.session.add(user)
     db.session.commit()
   
-    # Fetch all SEO entries from the database
-    rows = User.query.all()
-    # no_data = len(rows) == 0
+    return redirect(url_for('index'))
 
- 
-   
-    return render_template('index.html', rows=rows)
-
+# Route to handle entry deletion
+@app.route('/delete/<int:sno>', methods=['POST'])
+def delete_entry(sno):
+    entry = User.query.get_or_404(sno)
+    db.session.delete(entry)
+    db.session.commit()
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     init_db()
