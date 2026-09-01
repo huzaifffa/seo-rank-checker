@@ -1,9 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for
-from googlesearch import search
 from flask_sqlalchemy import SQLAlchemy
 import math
 import traceback
-from datetime import datetime 
+from datetime import datetime
+from google_search import check_ranking
 
 app = Flask(__name__)
 
@@ -45,11 +45,9 @@ def check_rank():
 
     # Determine top-level domain based on region
     if region == "1":
-        domain_tld = "com"
         region_name = "USA"
         print('The search is in USA - Google')
     elif region == "2":
-        domain_tld = "com.pk"
         region_name = "Pakistan"
         print('The search is in Pakistan - Google')
 
@@ -72,33 +70,12 @@ def check_rank():
             print(f'\n--- Searching keyword {y+1}/{len(keywords)}: "{keyword}" ---')
 
             try:
-                urls = search(keyword, tld=domain_tld, num=100, stop=100, pause=2)
+                result = check_ranking(my_website, keyword)
+                print(f'  [RESULT] {result}')
 
-                urls = list(urls)
-                print(f'  {len(urls)} URLs returned for "{keyword}"')
-                print('  First 5 results:')
-                for idx, url in enumerate(urls[:5]):
-                    print(f'    {idx+1}. {url}')
-
-                if len(urls) == 0:
-                    print('  [WARNING] Empty result - likely CAPTCHA/blocked by Google')
-                    results.append({"keyword": keyword, "rank": "Blocked/0 results", "page": "N/A"})
-                    y += 1
-                    continue
-
-                found = False
-                for index, url in enumerate(urls):
-                    if my_website in url:
-                        page = math.ceil((index+1)/10)
-                        rank = index+1
-                        print(f'  [FOUND] "{keyword}" at position {rank} (page {page}): {url}')
-                        results.append({"keyword": keyword, "rank": rank, "page": page, "url":url})
-                        found = True
-                        break
-
-                if not found:
-                    print(f'  [NOT FOUND] "{keyword}" not found in {len(urls)} results')
-                    results.append({"keyword": keyword, "rank": "Not Found", "page": "Not Found"})
+                rank = result["rank"]
+                page = result["page"]
+                results.append({**result, "page": page})
 
             except Exception as e:
                 print(f'  [EXCEPTION] {type(e).__name__}: {e}')
